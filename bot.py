@@ -2,6 +2,7 @@ import urlextract
 from aiogram import Bot, Dispatcher, executor, types
 from random import randint
 from qrdetector import detect
+from checker import checkURL
 from secret import TOKEN
 
 bot = Bot(token=TOKEN)
