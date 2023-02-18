@@ -18,24 +18,41 @@ def CheckSSL(link):
 
 
 def CheckRedirects(link):
+    redirects = []
     try:
         r = requests.get(link)
+        for i in r.history:
+            redirects.append(i.url)
+        redirects.append(r.url)
     except requests.exceptions.MissingSchema:
-
-
-
-
+        try:
+            r = requests.get("https://" + link)
+            for i in r.history:
+                redirects.append(i.url)
+            redirects.append(r.url) 
+        except requests.exceptions.SSLError:
+            r = requests.get("http://" + link)
+            for i in r.history:
+                redirects.append(i.url)
+            redirects.append(r.url)
+            
+    rediCount = len(redirects) - 1
+    print(redirects)
+    proto = redirects[rediCount]
+    return proto, rediCount
 
 
 def checkURL(link):
     ret = {
         "SSL": 1,
-        "Protocol": True,
-        "Reachable": True
+        "Protocol": False,
     }
 
     ret["SSL"] = CheckSSL(link)
-    CheckRedirects(link)
+    protocol, redirects = CheckRedirects(link)
+    if protocol[0:5] == "https":
+        ret["Protocol"] = True
+
     return ret
 
 print(checkURL('info.cern.ch'))
