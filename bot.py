@@ -35,8 +35,17 @@ async def photo(message: types.Message):
     await message.photo[-1].download(name)
     msg = await message.reply("I'm checking your QR code")
     val = detect(name)
-    print(val)
-    await msg.edit_text(val)
+    for i in val[1]:
+        print(i)
+    if val[0]:
+        ans = ""
+        for i in val[1]:
+            #check linnk for security
+            ans += i + "\nChecked:\n\nSSL certificate: " '''check SSL certificate''' + "\nProtocol: " '''check Protocol''' + "\nRedirects: " '''check Redirects''' + "\n\n" + "Result: " '''check Result''' + "\n\n"
+        
+        await msg.edit_text(ans)
+    else:
+        await msg.edit_text("QR code is not detected")
 
 
 if __name__ == '__main__':
