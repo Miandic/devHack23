@@ -1,3 +1,1 @@
-= requests.get(url)
-    print(resp)
-    retu
+https://www.hellotech.com/

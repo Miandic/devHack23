@@ -2,7 +2,7 @@ import urlextract
 from aiogram import Bot, Dispatcher, executor, types
 from random import randint
 from qrdetector import detect
-from checker import checkURL
+from checker import CheckURL
 from secret import TOKEN
 
 bot = Bot(token=TOKEN)
@@ -43,8 +43,8 @@ async def photo(message: types.Message):
             extractor = urlextract.URLExtract()
             url = extractor.find_urls(i)
             if url:
-                #check link for security
-                ans += i + "\nChecked:\n\nSSL certificate: " '''check SSL certificate''' + "\nProtocol: " '''check Protocol''' + "\nRedirects: " '''check Redirects''' + "\n\n" + "Result: " '''check Result''' + "\n\n"
+                res = CheckURL(url[0])
+                ans += res["URL"] + "\nChecked:\n\nSSL certificate: " + res["SSL"] + "\nProtocol: " + res["Protocol"] + "\nRedirects: " + res["Redirects"] + "\n\n" + "Result: " + res["Result"] + "\n\n"
             else:
                 ans += i +" is not a URL ¯\_(ツ)_/¯" + "\n\n"
         
@@ -59,8 +59,8 @@ async def text(message: types.Message):
     urls = extractor.find_urls(message.text)
     if urls:
         for i in urls:
-            #check link for security
-            await message.reply(i + "\nChecked:\n\nSSL certificate: " '''check SSL certificate''' + "\nProtocol: " '''check Protocol''' + "\nRedirects: " '''check Redirects''' + "\n\n" + "Result: " '''check Result''' + "\n\n")
+            res = CheckURL(i)
+            await message.reply(res["URL"] + "\nChecked:\n\nSSL certificate: " + res["SSL"] + "\nProtocol: " + res["Protocol"] + "\nRedirects: " + res["Redirects"] + "\n\n" + "Result: " + res["Result"] + "\n\n")
     else:
         await message.reply("No URLs in your message :)")
 

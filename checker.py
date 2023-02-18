@@ -10,11 +10,13 @@ def CheckSSL(link):
         subject = dict(x[0] for x in cert['subject'])
         try:
             subject["businessCategory"]
-            return 2
+            return "STRONG"
         except KeyError:
-            return 1
+            return "OK"
     except ssl.SSLCertVerificationError:
-        return 0
+        return "NO"
+    except Exception:
+        return "error occuried with this url"
 
 
 def CheckRedirects(link):
@@ -37,24 +39,47 @@ def CheckRedirects(link):
             redirects.append(r.url)
             
     rediCount = len(redirects) - 1
-    print(redirects)
+    finalUrl = redirects[rediCount]
+    #print(redirects)
     proto = redirects[rediCount]
-    return proto, rediCount
+    return proto, rediCount, finalUrl
 
 
-def checkURL(link):
+def CheckURL(link):
+    print(link)
     ret = {
-        "SSL": 1,
-        "Protocol": False,
+        "SSL": "OK",
+        "Protocol": "http",
+        "Redirects": "0",
+        "Result": "idk"
     }
-
+    cnt = 0
     ret["SSL"] = CheckSSL(link)
-    protocol, redirects = CheckRedirects(link)
+    if ret["SSL"] == "STRONG":
+        cnt = 5
+    if ret["SSL"] == "OK":
+        cnt += 1
+    
+    protocol, redirects, finalUrl = CheckRedirects(link)
     if protocol[0:5] == "https":
-        ret["Protocol"] = True
+        ret["Protocol"] = "https"
+        cnt += 1
+    ret["Redirects"] = str(redirects)
+    
+    while redirects > 0:
+        redirects -= 1
+        cnt -= 0.3
 
+    if cnt >= 2:
+        ret["Result"] = "Great"
+    elif cnt < 1:
+        ret["Result"] = "Sus"
+    else:
+        ret["Result"] = "Ok"
+
+    ret["URL"] = finalUrl
+    
     return ret
 
-print(checkURL('info.cern.ch'))
-print(checkURL('google.com'))
-print(checkURL('thawte.com'))
+
+print(CheckSSL('https://www.hellotech.com/'))
