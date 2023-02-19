@@ -1,4 +1,5 @@
 import urlextract
+import os
 from aiogram import Bot, Dispatcher, executor, types
 from random import randint
 from qrdetector import detect
@@ -28,29 +29,39 @@ dp = Dispatcher(bot)
 
 @dp.message_handler(commands=['start', 'help'])
 async def send_welcome(message: types.Message):
-    await message.reply("Hi!\nSend me a photo of any QR code or a link in the form of text, and I will check it for security")
+    await message.reply('Hi!\nSend me a photo of any QR code or a link in the form of text, and I will check it for security')
 
 @dp.message_handler(content_types=['photo'])
 async def photo(message: types.Message):
     num = randint(0, 1e9)
-    name = str(num) + ".jpg"
+    name = str(num) + '.jpg'
     await message.photo[-1].download(name)
     msg = await message.reply("I'm checking your QR code")
     val = detect(name)
+    os.remove(name)
     if val[0]:
-        ans = ""
         for i in val[1]:
             extractor = urlextract.URLExtract()
             url = extractor.find_urls(i)
             if url:
                 res = CheckURL(url[0])
-                ans += res["URL"] + "\nChecked:\n\nSSL certificate: " + res["SSL"] + "\nProtocol: " + res["Protocol"] + "\nRedirects: " + res["Redirects"] + "\n\n" + "Result: " + res["Result"] + "\n\n"
+                ans = (
+                    'Checked\n'
+                    + res['URL']
+                    + '\n\nSSL certificate: ' + res['SSL']
+                    + '\nProtocol: ' + res['Protocol']
+                    + '\nRedirects: ' + res['Redirects']
+                    + '\n\n' + 'Result: ' + res['Result']
+                )
+                await bot.send_message(message.from_user.id, ans, parse_mode='HTML')
             else:
-                ans += i +" is not a URL ¯\_(ツ)_/¯" + "\n\n"
-        
-        await msg.edit_text(ans)
+                ans = str(
+                    '<b>' + i + '</b>'
+                    + ' is not a URL ¯\_(ツ)_/¯'
+                )
+                await bot.send_message(message.from_user.id, ans, parse_mode='HTML')
     else:
-        await msg.edit_text("QR code is not detected ＞﹏＜")
+        await msg.edit_text('<b> QR code </b> is not detected ＞﹏＜', parse_mode='HTML')
 
 
 @dp.message_handler(content_types=['text'])
@@ -60,9 +71,16 @@ async def text(message: types.Message):
     if urls:
         for i in urls:
             res = CheckURL(i)
-            await message.reply(res["URL"] + "\nChecked:\n\nSSL certificate: " + res["SSL"] + "\nProtocol: " + res["Protocol"] + "\nRedirects: " + res["Redirects"] + "\n\n" + "Result: " + res["Result"] + "\n\n")
+            await message.reply(
+                res['URL']
+                + '\nChecked:\n\nSSL certificate: ' + res['SSL']
+                + '\nProtocol: ' + res['Protocol']
+                + '\nRedirects: ' + res['Redirects']
+                + '\n\n' + 'Result: ' + res['Result']
+                + '\n\n'
+            , parse_mode='HTML')
     else:
-        await message.reply("No URLs in your message :)")
+        await message.reply('No URLs in your message', parse_mode='HTML')
 
 
 if __name__ == '__main__':
