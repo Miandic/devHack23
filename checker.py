@@ -48,23 +48,28 @@ def CheckRedirects(link):
 def CheckURL(link):
     print(link)
     ret = {
-        "SSL": "OK",
+        "SSL": "NO|BAD",
         "Protocol": "http",
         "Redirects": "0",
         "Result": "idk"
     }
     cnt = 0
-    ret["SSL"] = CheckSSL(link)
-    if ret["SSL"] == "STRONG":
-        cnt = 5
-    if ret["SSL"] == "OK":
-        cnt += 1
-    
     protocol, redirects, finalUrl = CheckRedirects(link)
     if protocol[0:5] == "https":
         ret["Protocol"] = "https"
         cnt += 1
     ret["Redirects"] = str(redirects)
+
+    ret["SSL"] = CheckSSL(link)
+    if ret["SSL"] == "error occuried with this url":
+        if ret["Protocol"] == "https":
+            ret["SSL"] = "OK"
+    if ret["SSL"] == "STRONG":
+        cnt = 5
+    if ret["SSL"] == "OK":
+        cnt += 1
+    
+    
     
     while redirects > 0:
         redirects -= 1

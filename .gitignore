@@ -1,3 +1,4 @@
 *.jpg
 secret.py
 /__pycache__/
+*.db

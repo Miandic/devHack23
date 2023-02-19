@@ -1,13 +1,16 @@
 import urlextract
 import os
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.types import ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from random import randint
 from qrdetector import detect
 from checker import CheckURL
 from secret import TOKEN
 
+
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
+
 
 '''
 ———————————No secret.py?———————————
@@ -27,6 +30,13 @@ dp = Dispatcher(bot)
 —————————————————————————————
 '''
 
+
+bLike = InlineKeyboardButton('👍', callback_data='Liked')
+bDislike = InlineKeyboardButton('👎', callback_data='Disliked')
+rateButtons = [bLike, bDislike]
+rateKeyboard = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(rateButtons)
+
+
 @dp.message_handler(commands=['start', 'help'])
 async def send_welcome(message: types.Message):
     await message.reply('Hi!\nSend me a photo of any QR code or a link in the form of text, and I will check it for security')
@@ -44,24 +54,27 @@ async def photo(message: types.Message):
             extractor = urlextract.URLExtract()
             url = extractor.find_urls(i)
             if url:
-                res = CheckURL(url[0])
-                ans = (
-                    'Checked\n'
-                    + res['URL']
-                    + '\n\nSSL certificate: ' + res['SSL']
-                    + '\nProtocol: ' + res['Protocol']
-                    + '\nRedirects: ' + res['Redirects']
-                    + '\n\n' + 'Result: ' + res['Result']
-                )
-                await bot.send_message(message.from_user.id, ans, parse_mode='HTML')
+                try:
+                    res = CheckURL(url[0])
+                    ans = (
+                        'Checked\n'
+                        + res['URL']
+                        + '\n\nSSL certificate: ' + res['SSL']
+                        + '\nProtocol: ' + res['Protocol']
+                        + '\nRedirects: ' + res['Redirects']
+                        + '\n\n' + 'Result: ' + res['Result']
+                    )
+                    await bot.send_message(message.from_user.id, ans, parse_mode='HTML')
+                except Exception:
+                    await bot.send_message(message.from_user.id, 'Sorry, something went wrong ＞﹏＜', parse_mode='HTML')
             else:
                 ans = str(
                     '<b>' + i + '</b>'
-                    + ' is not a URL ¯\_(ツ)_/¯'
+                    + ' is not a URL\n¯\_(ツ)_/¯'
                 )
                 await bot.send_message(message.from_user.id, ans, parse_mode='HTML')
     else:
-        await msg.edit_text('<b> QR code </b> is not detected ＞﹏＜', parse_mode='HTML')
+        await msg.edit_text('<b>QR code</b> is not detected ＞﹏＜', parse_mode='HTML')
 
 
 @dp.message_handler(content_types=['text'])
